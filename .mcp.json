@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "iga-pages": {
+      "type": "http",
+      "url": "https://iga-pages.mcp.volcbiz.com"
+    }
+  }
+}

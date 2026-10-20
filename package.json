@@ -1,0 +1,11 @@
+{
+  "name": "iga-pages",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./hooks/opencode-plugin.mjs",
+    "./server": "./hooks/kilo-plugin.mjs"
+  }
+}

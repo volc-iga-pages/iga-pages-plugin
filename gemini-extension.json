@@ -1,0 +1,17 @@
+{
+  "name": "iga-pages",
+  "version": "0.1.0",
+  "description": "Develop and deploy frontend, full-stack, and AI agent applications on IGA Pages.",
+  "mcpServers": {
+    "iga-pages": {
+      "httpUrl": "https://iga-pages.mcp.volcbiz.com"
+    }
+  },
+  "settings": [
+    {
+      "name": "Disable usage statistics",
+      "description": "Set to 1 to disable plugin usage statistics.",
+      "envVar": "IGA_PAGES_PLUGIN_TELEMETRY_DISABLED"
+    }
+  ]
+}

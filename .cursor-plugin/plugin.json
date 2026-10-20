@@ -1,0 +1,19 @@
+{
+  "name": "iga-pages",
+  "version": "0.1.0",
+  "description": "Develop and deploy frontend and full-stack applications with IGA Pages.",
+  "author": {
+    "name": "Volcengine IGA Pages"
+  },
+  "homepage": "https://www.volcengine.com/docs/6559/2188992?lang=zh",
+  "license": "MIT",
+  "keywords": [
+    "iga-pages",
+    "deployment",
+    "frontend",
+    "full-stack",
+    "serverless"
+  ],
+  "skills": "skills",
+  "hooks": "./hooks/cursor.json"
+}

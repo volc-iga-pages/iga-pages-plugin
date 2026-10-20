@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|run_in_terminal|run_terminal_command)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"import(require('node:url').pathToFileURL(require('node:path').join(process.env.CLAUDE_PLUGIN_ROOT || process.env.PLUGIN_ROOT, 'hooks/check-dev-command.mjs')).href)\" iga-hook shared",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|new",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"import(require('node:url').pathToFileURL(require('node:path').join(process.env.CLAUDE_PLUGIN_ROOT || process.env.PLUGIN_ROOT || process.env.IGA_GEMINI_EXTENSION_ROOT, 'hooks/session-start.mjs')).href)\" iga-hook shared",
+            "env": {
+              "IGA_GEMINI_EXTENSION_ROOT": "${extensionPath}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "type": "command",
+        "matcher": "bash|powershell",
+        "bash": "node \"${PLUGIN_ROOT}/hooks/check-dev-command.mjs\" copilot",
+        "powershell": "node \"$env:PLUGIN_ROOT/hooks/check-dev-command.mjs\" copilot",
+        "timeoutSec": 5
+      }
+    ],
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "node \"${PLUGIN_ROOT}/hooks/session-start-telemetry.mjs\" github-copilot",
+        "powershell": "node \"$env:PLUGIN_ROOT/hooks/session-start-telemetry.mjs\" github-copilot",
+        "timeoutSec": 5
+      }
+    ]
+  }
+}

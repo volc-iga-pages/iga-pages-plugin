@@ -1,0 +1,17 @@
+{
+  "name": "iga-pages",
+  "owner": {
+    "name": "Volcengine IGA Pages"
+  },
+  "metadata": {
+    "description": "IGA Pages guidance for AI coding agents."
+  },
+  "plugins": [
+    {
+      "name": "iga-pages",
+      "source": "./",
+      "description": "Develop and deploy frontend and full-stack applications with IGA Pages.",
+      "version": "0.1.0"
+    }
+  ]
+}
