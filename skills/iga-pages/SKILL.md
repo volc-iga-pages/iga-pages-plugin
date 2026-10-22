@@ -14,7 +14,7 @@ Run `iga <command> -h` for full flag details.
 
 ## Critical: CLI Version
 
-The `@iga-pages/cli` version must be **>= 1.1.9**, and Node.js must be **>= 20**. Check with `iga --version`; if the CLI is missing or older, install or upgrade the public package before using other `iga` commands:
+The `@iga-pages/cli` version must be **>= 1.1.13**, and Node.js must be **>= 20**. Check with `iga --version`; if the CLI is missing or older, install or upgrade the public package before using other `iga` commands:
 
 ```bash
 npm i -g @iga-pages/cli@latest
@@ -28,7 +28,9 @@ Pure static assets (plain HTML/JS/CSS) can also be deployed — the project root
 
 ## Critical: Login Authentication
 
-Before remote operations (`init`, `link`, `list`, `deploy`, `preview`, `inspect`, `logs`, `env`, and `integration`), run `iga whoami`. Reuse the existing login when it succeeds. Run `iga login` only when credentials are missing, expired, or rejected; diagnose network and service errors instead of treating every failure as a reason to log in again.
+Before remote operations (`init`, `link`, `list`, `deploy`, `preview`, `inspect`, `logs`, `env`, and `integration`, including `integration configure aigateway view/update`), run `iga whoami`. Reuse the existing login when it succeeds. Run `iga login` only when credentials are missing, expired, or rejected; diagnose network and service errors instead of treating every failure as a reason to log in again.
+
+`integration configure aigateway template` and `template list` are local operations and do not require login or a linked project.
 
 When login is actually needed, the method depends on the environment:
 
@@ -83,7 +85,7 @@ VE_SKILL_ID=iga-pages/1.0.13 iga <command>
 ## Quick Reference
 
 ```bash
-iga --version                       # must be >= 1.1.9
+iga --version                       # must be >= 1.1.13
 
 iga whoami                        # check current login state; run this BEFORE login
 iga login                         # local IDE: opens browser; only if whoami fails
@@ -122,6 +124,13 @@ iga pages integration unlink supabase       # remove a Supabase binding
 iga pages integration unlink supabase --format=json --yes
 iga pages integration link aigateway --resource <gateway-name-or-id>
 iga pages integration unlink aigateway --yes
+
+## AI Gateway model configuration (view/update require a linked gateway)
+iga pages integration configure aigateway view --format=json
+iga pages integration configure aigateway template list --format=json
+iga pages integration configure aigateway template --provider deepseek,custom --output models.json
+iga pages integration configure aigateway update --models-file models.json --format=json
+# After authorization, rerun update with --yes; it replaces the FULL model list.
 ```
 
 - **Agent projects** use the same `pages dev`, `pages build`, and `pages deploy` workflow as other full-stack projects; there is no separate Agent deploy command.
@@ -141,12 +150,14 @@ iga pages integration unlink aigateway --yes
 ## Environment Variables & Integrations
 
 - Project-level env vars (`env list/add/update/remove/pull`): read [references/env.md](references/env.md).
-- Connecting Supabase or AI Gateway (`integration list/link/unlink`) and the deploy orchestration order (link → integration → deploy), plus when to hand off to the `byted-supabase` skill: read [references/integration.md](references/integration.md).
+- Connecting Supabase or AI Gateway (`integration list/link/unlink`), configuring gateway models (`integration configure aigateway view/update/template/template list`), and the deploy orchestration order (link → integration → deploy), plus when to hand off to the `byted-supabase` skill: read [references/integration.md](references/integration.md).
 
 ## Inspection & Logs
 
 - Deployment status, build logs, and historical runtime logs:
   read [references/logs.md](references/logs.md).
+- When deployment fails, check both build logs and runtime logs for that deployment: `iga pages logs <DEPLOYMENT_ID> --since 1h --limit 100 --json`.
+- For startup failures, query without `--level error` first: startup/stderr logs may have an empty `level`, so filtering by error can hide the actual exception.
 
 ## Anti-Patterns
 

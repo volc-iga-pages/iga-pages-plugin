@@ -1,8 +1,8 @@
 # Integrations (`iga pages integration`)
 
-Connect an existing **Volcengine Supabase** or **AI Gateway** resource to the Pages project so its connection variables are synced as project env. Integration commands manage the IGA-side binding, not the external resource itself.
+Connect an existing **Volcengine Supabase** or **AI Gateway** resource to the Pages project so its connection variables are synced as project env. The `list/link/unlink` commands manage the IGA-side binding. The `configure aigateway` commands below view or update the linked gateway instance’s model configuration.
 
-All `integration` commands require the directory to be linked to a Pages project (`iga pages link` writes `.iga/project.json`). Changes take effect on the **next deployment**.
+`list/link/unlink` and `configure aigateway view/update` require the directory to be linked to a Pages project (run `iga pages link` first). `template` and `template list` are local operations and do not require login or a linked project. Binding changes take effect on the **next deployment**.
 
 ```bash
 iga pages integration list         # bindings on the current Pages project
@@ -43,7 +43,7 @@ iga pages integration unlink supabase --product volc_supabase \
 
 Key behaviors:
 
-- Supabase supports **`supabase` / `volc_supabase`**. `--product comm_supabase` (Supabase Community) is rejected — tell the user it's not supported yet.
+- The integration name is `supabase`. Only **Volcengine Supabase** is supported; `--product` defaults to `volc_supabase` and can be omitted. Other product values, including `supabase` and `comm_supabase`, are rejected.
 - **`--resource` / `--branch`** match either the display name (`WorkspaceName` / `Branch`) or the stable ID (`WorkspaceID` / `BranchID`). Ambiguous matches in non-TTY error out — pass a unique ID.
 - **`--framework-prefix`** (optional) is the client-exposed env prefix (`NEXT_PUBLIC`, `VITE`, `PUBLIC`, `REACT_APP`). The CLI auto-detects the framework and uses it as the default; in TTY it prompts for confirmation, in non-TTY it uses the detected value silently. Pass `--framework-prefix` only to override the detected default.
 - **`--prefix`** (custom prefix) is **optional for the first** Supabase binding but **required from the second onward**, to avoid env name collisions. Uniqueness is enforced by the backend; on a conflict the CLI surfaces the error and re-prompts.
@@ -64,6 +64,37 @@ iga pages integration unlink aigateway --resource <gateway-name-or-id> --yes --f
 - The product is `ai_gateway`; `--product` is optional.
 - `unlink aigateway` removes the binding and its project environment variables, not the gateway instance. Without `--yes`, JSON output returns `needs_confirmation`; rerun with `--yes` once unlinking is authorized.
 
+### Model configuration (`configure aigateway`)
+
+```bash
+# Inspect the linked gateway; model and instance API keys are masked.
+iga pages integration configure aigateway view --format=json
+
+# List template providers (local, read-only).
+iga pages integration configure aigateway template list --format=json
+
+# Generate a local JSON array template for one or more providers.
+iga pages integration configure aigateway template \
+  --provider deepseek,custom --output models.json
+
+# Edit the file with the complete desired model list and real credentials,
+# then request a masked confirmation preview (does not update the gateway).
+iga pages integration configure aigateway update \
+  --models-file models.json --format=json
+
+# Once updating this gateway is authorized:
+iga pages integration configure aigateway update \
+  --models-file models.json --format=json --yes
+```
+
+- **Scope:** `view/update` resolve the current project's unique linked gateway; they do not accept `--resource`. Link the project and gateway first. `update` changes the **gateway instance**, so other projects using that gateway may also be affected.
+- **Full replacement:** `update` replaces the entire `MaasAPI.Models` array, rather than appending or merging models. Include every model that should remain. Other gateway instance settings are preserved; the instance is not deleted.
+- **Template options:** `--provider` accepts comma-separated provider names; use `template list` for the supported names. Without it, the template contains DeepSeek and custom examples. `--output` (alias `-o`) defaults to `models.json`. Both template commands support `--format=json`. Overwriting an existing file requires confirmation or `--yes`; JSON mode without `--yes` returns `file_exists`.
+- **File format:** the top-level value must be a JSON array containing 1–50 models. Generate a provider-specific template instead of guessing its fields. Most templates contain `Provider`, `Model`, `Category`, `APIKey`, `Source`, and `Weight`; Agent Plan omits `Model` and `Category`, and custom providers additionally require `BaseURL` and a non-empty `APIKey`. If supplied, `Weight` must be an integer from 0 to 100.
+- **Credentials:** fill in real credentials locally. `view` output is masked and uses a display schema, so it cannot be reused directly as an update file. Do not commit credential-bearing `models.json` files or print their contents in logs.
+- **Confirmation:** JSON `update` without `--yes` returns `needs_confirmation` with a masked preview and does not write changes. Rerun with `--yes` after authorization. Non-TTY updates require `--yes`; TTY updates prompt when it is omitted.
+- After a successful update, the CLI directs you to deploy for changes to take effect and to run `iga pages env pull` when local configuration needs refreshing.
+
 ## Deploy orchestration
 
 The IGA Pages skill is the **orchestrator** for the deploy flow. Recommended order when a user wants to deploy a project that may use an integration:
@@ -76,4 +107,4 @@ The IGA Pages skill is the **orchestrator** for the deploy flow. Recommended ord
 
 ## Supabase provider work → hand off to `byted-supabase`
 
-This skill only orchestrates link / integration / env / deploy. It does **not** manage Supabase resources (creating workspaces/branches, SQL, migrations, API keys, Storage, Edge Functions). When the user wants to create or manage actual Supabase resources, hand off to the `byted-supabase` skill (`https://github.com/bytedance/agentkit-samples/blob/main/skills/byted-supabase/SKILL.md`). After it finishes, return and confirm with the user before continuing link / integration / deploy — don't auto-continue.
+This skill orchestrates link / integration / env / deploy and supports model configuration on the linked AI Gateway instance. It does **not** manage Supabase resources (creating workspaces/branches, SQL, migrations, API keys, Storage, Edge Functions). When the user wants to create or manage actual Supabase resources, hand off to the `byted-supabase` skill (`https://github.com/bytedance/agentkit-samples/blob/main/skills/byted-supabase/SKILL.md`). After it finishes, return and confirm with the user before continuing link / integration / deploy — don't auto-continue.
