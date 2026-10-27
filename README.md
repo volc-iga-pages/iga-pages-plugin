@@ -120,6 +120,11 @@ npx skills add volc-iga-pages/iga-pages-plugin
 
 在客户端环境中设置 `IGA_PAGES_PLUGIN_TELEMETRY_DISABLED=1` 可关闭插件统计。网络请求超时为 1 秒，上报失败不会导致 hook 失败。Kimi 不注册会话 hooks。OpenCode 也支持通过插件选项 `telemetry: false` 关闭统计；更改环境变量后，运行 `opencode service restart` 重启 OpenCode 服务。
 
+## 隐私与支持
+
+- 隐私政策：[PRIVACY.md](PRIVACY.md)
+- 支持邮箱：[volc-vne-bot@bytedance.com](mailto:volc-vne-bot@bytedance.com)
+
 ## 许可证
 
 [MIT](LICENSE)

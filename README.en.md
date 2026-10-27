@@ -120,6 +120,11 @@ Keep `package.json` `scripts.dev` set to the framework command, such as `vite` o
 
 The plugin reports first use and daily activity by default. Events include the plugin name/version, client type, and a hashed device identifier. Set `IGA_PAGES_PLUGIN_TELEMETRY_DISABLED=1` in the client environment to disable reporting. Network requests time out after one second; reporting failures do not fail the hook. Kimi does not register session hooks. OpenCode also supports the plugin option `telemetry: false` to disable reporting. Restart the OpenCode service after changing its environment (`opencode service restart`).
 
+## Privacy and Support
+
+- Privacy Policy: [PRIVACY.md](PRIVACY.md)
+- Support: [volc-vne-bot@bytedance.com](mailto:volc-vne-bot@bytedance.com)
+
 ## License
 
 [MIT](LICENSE)
