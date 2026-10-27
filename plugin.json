@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "iga-pages",
+  "version": "0.1.0",
+  "description": "Develop and deploy frontend and full-stack applications with IGA Pages.",
+  "author": {
+    "name": "Volcengine IGA Pages",
+    "url": "https://github.com/volc-iga-pages/iga-pages-plugin"
+  },
+  "keywords": [
+    "iga-pages",
+    "deployment",
+    "frontend",
+    "full-stack",
+    "serverless"
+  ],
+  "homepage": "https://www.volcengine.com/docs/6559/2188992?lang=zh",
+  "repository": "https://github.com/volc-iga-pages/iga-pages-plugin",
+  "license": "MIT"
+}
