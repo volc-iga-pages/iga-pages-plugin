@@ -1,5 +1,8 @@
 # Deployment Inspection and Logs
 
+Examples use Pages commands. For an Agent association, use `iga agents`
+in place of `iga pages` throughout; see [project-commands.md](project-commands.md).
+
 Choose the command by the source of the information:
 
 | Need | Command | Log type |

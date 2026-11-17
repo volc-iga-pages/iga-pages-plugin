@@ -1,6 +1,6 @@
 # Environment Variables (`iga pages env`)
 
-All `env` commands require the directory to be linked to a Pages project (`iga pages link` writes `.iga/project.json`). If not linked, the CLI tells the user to run `iga pages link` first.
+Pages `env` commands require the directory to be linked to a Pages project (`iga pages link` writes `.iga/project.json`). If not linked, the CLI tells the user to run `iga pages link` first.
 
 Changes to `add`/`update`/`remove` edit **remote project config**, not local files, and only take effect on the **next deployment** — the CLI says so after each write.
 
@@ -15,6 +15,8 @@ iga pages env remove <NAME>        # or: env rm — asks for confirmation
 iga pages env remove <NAME> --yes  # skip confirmation (required when no TTY)
 iga pages env pull                 # write all project env to local .env.local
 ```
+
+Agent projects use `iga agents env` with the same variable behavior; manage AI Gateway bindings through `iga agents integration link`/`unlink`. Agent integrations do not support Supabase.
 
 Notes:
 

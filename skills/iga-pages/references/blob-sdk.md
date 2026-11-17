@@ -1,4 +1,4 @@
-# Server-side Blob SDK
+# File Storage and Uploads
 
 `@iga-pages/blob` provides durable, project-scoped object storage for Agent
 artifacts, files, images, and general application data. Use it only in IGA Pages

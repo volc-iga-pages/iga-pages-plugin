@@ -1,8 +1,11 @@
 # Integrations (`iga pages integration`)
 
-Connect an existing **Volcengine Supabase** or **AI Gateway** resource to the Pages project so its connection variables are synced as project env. The `list/link/unlink` commands manage the IGA-side binding. The `configure aigateway` commands below view or update the linked gateway instance’s model configuration.
+Pages projects support Supabase and AI Gateway integrations. Agent projects
+support AI Gateway only; Supabase integration is not supported.
 
-`list/link/unlink` and `configure aigateway view/update` require the directory to be linked to a Pages project (run `iga pages link` first). `template` and `template list` are local operations and do not require login or a linked project. Binding changes take effect on the **next deployment**.
+Connect an existing **Volcengine Supabase** or **AI Gateway** resource to the Pages project so its connection variables are synced as project env. The `list/link/unlink` commands manage the IGA-side binding; `create aigateway` creates or reuses the shared Pages gateway and binds it. The `configure aigateway` commands below view or update the linked gateway instance’s model configuration.
+
+`create aigateway`, `list/link/unlink` and `configure aigateway view/update` require the directory to be linked to a Pages project (run `iga pages link` first). `template` and `template list` are local operations and do not require login or a linked project. Binding changes take effect on the **next deployment**.
 
 ```bash
 iga pages integration list         # bindings on the current Pages project
@@ -53,58 +56,46 @@ Key behaviors:
 ## AI Gateway
 
 ```bash
-iga pages integration link aigateway           # interactive: select an existing gateway
-iga pages integration link aigateway --format=json  # returns choices as needs_input
+iga pages integration create aigateway --format=json
 iga pages integration link aigateway --resource <gateway-name-or-id> --format=json
-iga pages integration unlink aigateway --resource <gateway-name-or-id> --yes --format=json
+iga pages integration unlink aigateway --resource <gateway-id> --yes --format=json
 ```
 
-- `--resource` matches a gateway name or ID. For non-interactive linking, supply it; use an ID when names are ambiguous. JSON output returns `needs_input` and choices when selection is required. If no gateway exists, create one in the console before linking.
-- Each Pages project can bind one gateway. Check `integration list` first and reuse the required binding; unlink the existing gateway before binding another.
-- The product is `ai_gateway`; `--product` is optional.
-- `unlink aigateway` removes the binding and its project environment variables, not the gateway instance. Without `--yes`, JSON output returns `needs_confirmation`; rerun with `--yes` once unlinking is authorized.
+- `create` creates or reuses the account's shared Pages gateway and binds this project; an existing project binding is preserved.
+- `link` selects an existing gateway; use a unique ID when names are ambiguous. Each project can bind one gateway. `unlink` removes its binding and managed env vars, keeping the instance; pass `--yes` once unlinking is authorized.
+- Creation does not change model configuration, write local env files or deploy. After a failure or timeout, check `integration list` and the console before retrying.
 
-### Model configuration (`configure aigateway`)
+### Model configuration
 
 ```bash
-# Inspect the linked gateway; model and instance API keys are masked.
 iga pages integration configure aigateway view --format=json
-
-# List template providers (local, read-only).
 iga pages integration configure aigateway template list --format=json
-
-# Generate a local JSON array template for one or more providers.
-iga pages integration configure aigateway template \
-  --provider deepseek,custom --output models.json
-
-# Edit the file with the complete desired model list and real credentials,
-# then request a masked confirmation preview (does not update the gateway).
-iga pages integration configure aigateway update \
-  --models-file models.json --format=json
-
-# Once updating this gateway is authorized:
-iga pages integration configure aigateway update \
-  --models-file models.json --format=json --yes
+iga pages integration configure aigateway template --provider deepseek,custom --output models.json
+iga pages integration configure aigateway update --models-file models.json --format=json
+# After authorization, add --yes to apply the update.
 ```
 
-- **Scope:** `view/update` resolve the current project's unique linked gateway; they do not accept `--resource`. Link the project and gateway first. `update` changes the **gateway instance**, so other projects using that gateway may also be affected.
-- **Full replacement:** `update` replaces the entire `MaasAPI.Models` array, rather than appending or merging models. Include every model that should remain. Other gateway instance settings are preserved; the instance is not deleted.
-- **Template options:** `--provider` accepts comma-separated provider names; use `template list` for the supported names. Without it, the template contains DeepSeek and custom examples. `--output` (alias `-o`) defaults to `models.json`. Both template commands support `--format=json`. Overwriting an existing file requires confirmation or `--yes`; JSON mode without `--yes` returns `file_exists`.
-- **File format:** the top-level value must be a JSON array containing 1–50 models. Generate a provider-specific template instead of guessing its fields. Most templates contain `Provider`, `Model`, `Category`, `APIKey`, `Source`, and `Weight`; Agent Plan omits `Model` and `Category`, and custom providers additionally require `BaseURL` and a non-empty `APIKey`. If supplied, `Weight` must be an integer from 0 to 100.
-- **Credentials:** fill in real credentials locally. `view` output is masked and uses a display schema, so it cannot be reused directly as an update file. Do not commit credential-bearing `models.json` files or print their contents in logs.
-- **Confirmation:** JSON `update` without `--yes` returns `needs_confirmation` with a masked preview and does not write changes. Rerun with `--yes` after authorization. Non-TTY updates require `--yes`; TTY updates prompt when it is omitted.
-- After a successful update, the CLI directs you to deploy for changes to take effect and to run `iga pages env pull` when local configuration needs refreshing.
+- `view/update` target the current project's linked gateway, without `--resource`. Updates replace the **complete model list** and affect all projects sharing that gateway; include every model that should remain.
+- Generate a provider-specific template, then fill in the complete JSON model array and credentials locally. `view` output is masked and cannot be reused as an update file. Do not commit credential-bearing files or print their contents.
+- JSON `update` without `--yes` returns a masked confirmation preview without writing. Reuse existing authorization when applying it. Template commands are local; overwriting an existing file requires confirmation or `--yes`.
 
-## Deploy orchestration
+## Manual Agent gateway binding and model configuration
 
-The IGA Pages skill is the **orchestrator** for the deploy flow. Recommended order when a user wants to deploy a project that may use an integration:
+```bash
+iga agents integration list --format=json
+iga agents integration link aigateway --resource <gateway-name-or-id> --format=json
+iga agents integration unlink aigateway --resource <gateway-id> --yes --format=json
+iga agents env pull
+iga agents integration configure aigateway view --format=json
+iga agents integration configure aigateway template list --format=json
+iga agents integration configure aigateway template --provider deepseek,custom --output models.json
+iga agents integration configure aigateway update --models-file models.json --format=json
+```
 
-1. Ensure logged in with `iga whoami`; only run `iga login` if `whoami` fails.
-2. If the directory is not linked yet, run `iga pages link` to create/associate the Pages project (this no longer deploys). If it is already linked, continue without relinking.
-3. If Supabase or AI Gateway usage is detected, run `iga pages integration list`. Reuse the required binding. If it is absent, confirm the resource to connect unless the user has already specified it and authorized binding.
-4. For a missing binding, connect the selected resource with `iga pages integration link supabase` or `iga pages integration link aigateway --resource <gateway-id>`.
-5. `iga pages deploy`.
+Template generation and provider listing are local and do not require an Agent association or login. `view/update` use the Agent's linked gateway. Updates replace its complete model list, including for any other projects sharing that gateway; JSON update without `--yes` returns a masked confirmation preview. Apply an authorized update with `--yes`.
+
+Binding, env and model view/update commands require an Agent association (`iga agents link`). List output includes only AI Gateway bindings. Link/unlink default to `aigateway` when the integration name is omitted and reject other integrations and Supabase-only options. Selection, unlink confirmation, the single-gateway limit and configuration refresh follow the Pages gateway behavior. Follow-up commands retain the Agent entry, brand and selected environment.
 
 ## Supabase provider work → hand off to `byted-supabase`
 
-This skill orchestrates link / integration / env / deploy and supports model configuration on the linked AI Gateway instance. It does **not** manage Supabase resources (creating workspaces/branches, SQL, migrations, API keys, Storage, Edge Functions). When the user wants to create or manage actual Supabase resources, hand off to the `byted-supabase` skill (`https://github.com/bytedance/agentkit-samples/blob/main/skills/byted-supabase/SKILL.md`). After it finishes, return and confirm with the user before continuing link / integration / deploy — don't auto-continue.
+This skill orchestrates link / integration / env / deploy and supports model configuration on the linked AI Gateway instance. It does **not** manage Supabase resources (creating workspaces/branches, SQL, migrations, API keys, Storage, Edge Functions). When the user wants to create or manage actual Supabase resources, hand off to the `byted-supabase` skill (`https://github.com/bytedance/agentkit-samples/blob/main/skills/byted-supabase/SKILL.md`). Once the resource is ready, continue the authorized link / integration / deploy workflow.

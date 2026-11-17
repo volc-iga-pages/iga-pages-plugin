@@ -1,10 +1,14 @@
-# Server-side Agent SDK
+# Conversation History and Sandboxed Tools
+
+Use `@iga-pages/agent` to persist conversation history, integrate framework
+sessions, and give AI agents tools for running code, working with files, or
+browsing in an isolated sandbox.
 
 Use `@iga-pages/agent` only in Pages Functions or full-stack framework server
 handlers running through IGA Pages. It is unavailable in browser bundles,
 Client Components, static-only sites, and arbitrary Node.js processes.
 
-Install it as a direct dependency so `iga pages dev` can detect the runtime:
+Install it as a direct dependency so the matching IGA dev command can detect the runtime:
 
 ```bash
 npm install @iga-pages/agent
@@ -158,9 +162,11 @@ await sandbox.extendTimeout(30, { abortSignal: request.signal });
 await sandbox.destroy();
 ```
 
-Conversation Sandboxes may be recreated after expiry. Detached Sandboxes retain
-exact identity. Sandbox files are ephemeral; save durable outputs with
-`@iga-pages/blob`.
+`createSandbox()` must be awaited and returns with a usable `sandboxId`.
+Conversation Sandboxes are managed by the SDK while in use. Standalone and
+reconnected Sandboxes retain their instance identity; if an instance becomes
+unavailable, handle the failure in application code. Sandbox files are
+ephemeral; save durable outputs with `@iga-pages/blob`.
 
 ## Sandbox Data-plane Modules
 
@@ -241,9 +247,12 @@ untrusted users.
 ## Errors
 
 Catch `StoreError` for Store failures and `SandboxError` for lifecycle failures.
-Sandbox operations usually report failure through their response. Use
-`isAbortError(error)` to recognize cancellation.
+Lifecycle errors expose `{ code, status?, message }`. Sandbox operations usually
+report failure through their response; tool failures use `status: "error"` with
+a sanitized error object. Use `isAbortError(error)` to recognize cancellation.
 
+Error diagnostics may contain business data; select what to expose to the model
+or browser.
 Do not forward SDK error details or upstream status codes directly to clients.
 Choose application-level HTTP statuses and retry policies based on the
 operation. A failure does not prove that a write did not complete, so use stable
@@ -251,11 +260,16 @@ IDs for retried writes.
 
 ## Local Development and Runtime
 
-Use Node.js 20 or newer and run Agent applications with:
+Use Node.js 20 or newer. New Agent projects use:
 
 ```bash
-iga pages dev
+iga agents dev
 ```
+
+Existing Pages associations continue using `iga pages dev`. Follow
+[project-commands.md](project-commands.md) for association recovery and
+`--sandbox` configuration before using Sandbox APIs. SDK installation alone
+is insufficient to enable Sandbox.
 
 Local SDK calls use the linked project's real resources. Runtime credentials
 and project scope are supplied automatically; do not configure project IDs,

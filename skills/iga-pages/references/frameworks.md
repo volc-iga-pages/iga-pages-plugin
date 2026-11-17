@@ -1,8 +1,7 @@
 # Frameworks
 
-IGA Pages detects a project's framework and selects a build path, but it does
-not install or inject dependencies into the user project. A repository detection
-rule also does not necessarily mean that the framework is enabled for users.
+IGA Pages detects the application framework and selects a build path.
+It does not install or inject dependencies; use the supported frameworks below.
 
 Use the package manager already selected by the project. Do not create a second
 lockfile or replace unrelated framework configuration.

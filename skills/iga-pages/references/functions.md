@@ -1,5 +1,8 @@
 # Serverless Functions (API Routes)
 
+Examples use Pages commands. For an Agent association, use `iga agents`
+in place of `iga pages` throughout; see [project-commands.md](project-commands.md).
+
 IGA Pages provides file-system based Node.js Serverless Functions. Create an `api/` directory in your project root — each `.js` or `.ts` file automatically maps to an HTTP route.
 
 ## Quick Start
